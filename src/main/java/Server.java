@@ -5,27 +5,37 @@ import java.rmi.server.UnicastRemoteObject;
 
 public class Server implements Hello {
 
-    public Server() {}
+    static Registry reg;
 
-    public String sayHello() {
-        return "Hello, world!";
+    public Server() {
+        try {
+            reg = LocateRegistry.createRegistry(1099);
+        } catch (Exception e) {
+            System.err.println("Server Exception: " + e.toString());
+            e.printStackTrace();
+        }
+
     }
 
-    public static void main(String args[]) {
 
+    public static void main(String[] args) {
         try {
             Server obj = new Server();
             Hello stub = (Hello) UnicastRemoteObject.exportObject(obj, 0);
 
+            reg.bind("Hello", stub);
 
-            // Bind the remote object's stub in the registry
-            Registry registry = LocateRegistry.getRegistry();
-            registry.bind("Hello", stub);
-
-            System.err.println("Server ready");
+            System.out.println("Server ready!");
         } catch (Exception e) {
-            System.err.println("Server exception: " + e.toString());
+            System.err.println("Server Exception: " + e.toString());
             e.printStackTrace();
         }
+    }
+
+
+    @Override
+    public String sayHello(String name) throws RemoteException {
+        System.out.println(name);
+        return "Hello, " + name;
     }
 }
